@@ -34,7 +34,8 @@ def serve_layout():
         url_daily_reports = f'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/{date}.csv'
         df_daily_reports = pd.read_csv(url_daily_reports)
     except:
-        date = (datetime.now() - timedelta(days = 1)).strftime('%m-%d-%Y')
+        date = '03-31-20'
+        # date = (datetime.now() - timedelta(days = 1)).strftime('%m-%d-%Y')
         url_daily_reports = f'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/{date}.csv'
         df_daily_reports = pd.read_csv(url_daily_reports)
 
