@@ -29,8 +29,7 @@ def serve_layout():
 
     # Try today's date. If not yet updated use yesterday's date for daily reports:
     try:
-        date = '03-31-2020'
-        # date = datetime.now().strftime('%m-%d-%Y')
+        date = datetime.now().strftime('%m-%d-%Y')
         url_daily_reports = f'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/{date}.csv'
         df_daily_reports = pd.read_csv(url_daily_reports)
     except:
