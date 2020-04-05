@@ -13,6 +13,12 @@ import numpy as np
 # Import ISO3 mapping tool
 from geonamescache.mappers import country
 
+# Import GEOjson data
+from urllib.request import urlopen
+import json
+with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
+    counties = json.load(response)
+
 # Import timep
 from datetime import datetime, timedelta
 
@@ -31,11 +37,11 @@ def serve_layout():
     try:
         date = datetime.now().strftime('%m-%d-%Y')
         url_daily_reports = f'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/{date}.csv'
-        df_daily_reports = pd.read_csv(url_daily_reports)
+        df_daily_reports = pd.read_csv(url_daily_reports, dtype = {'FIPS': object})
     except:
         date = (datetime.now() - timedelta(days = 1)).strftime('%m-%d-%Y')
         url_daily_reports = f'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/{date}.csv'
-        df_daily_reports = pd.read_csv(url_daily_reports)
+        df_daily_reports = pd.read_csv(url_daily_reports, dtype = {'FIPS': object})
 
     # Subsets of confirmed cases:
     df_china = df_confirmed[df_confirmed['Country/Region'] == 'China']
@@ -210,13 +216,14 @@ def serve_layout():
     ## US CHOROPLETH
 
     fig_us = px.choropleth(
-        df_us_choro,
-        locations = 'Abbrev',
-        locationmode = 'USA-states',
+        df_daily_reports,
+        geojson = counties, 
+        locations = 'FIPS',
         scope = 'usa',
         color = 'Confirmed',
-        hover_name = 'Province_State',
-        range_color = (0, df_us['Confirmed'].max()),
+        hover_name = 'Admin2',
+        hover_data = ['Province_State'],
+        range_color = (0, df_daily_reports[df_daily_reports['Country_Region'] == 'US']['Confirmed'].max()),
         color_continuous_scale = [
             [0, 'rgb(250, 250, 250)'],       #0
             [1/10000, 'rgb(250, 175, 100)'], #10
@@ -227,12 +234,14 @@ def serve_layout():
         ])
 
     for trace in fig_us.data:
-        trace.hovertemplate = '<b>%{hovertext}</b><br>%{z:,f}'
+        trace.hovertemplate = '<b>%{hovertext}</b> (%{customdata[0]})<br>%{z:,f}'
 
     fig_us.layout.coloraxis.colorbar.title.text = 'Confirmed<br>Cases'
 
+    fig_us.update_traces(marker_line_width = 0.1)
+
     fig_us.update_layout(
-        title = f'Confirmed Cases in US ({date})',
+        title = f'US Counties ({date})',
         margin = {'r':0,'t':50,'l':0,'b':30},
     )
 
@@ -324,6 +333,13 @@ def serve_layout():
                 dcc.Graph(
                     figure = fig_global,
                 )], style = {'margin': '0'}, className = 'six columns')
+        ], className = 'twelve columns'),
+        html.Div([
+            html.Div([
+                dcc.Markdown('''If you find this dashboard helpful, please share it and consider donating to a charity on the frontlines 
+                of COVID-19, such as [Doctors Without Borders](https://donate.doctorswithoutborders.org/onetime.cfm).  \nCreated 
+                and maintained by [John Larson](https://www.linkedin.com/in/johnlarson2016/).'''),
+            ], style = {'paddingLeft':'10px', 'paddingTop':'20px'}),
         ], className = 'twelve columns')
     ])
 
