@@ -38,10 +38,12 @@ def serve_layout():
         date = datetime.now().strftime('%m-%d-%Y')
         url_daily_reports = f'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/{date}.csv'
         df_daily_reports = pd.read_csv(url_daily_reports, dtype = {'FIPS': object})
+        df_daily_reports['FIPS'] = df_daily_reports['FIPS'].str.zfill(5)
     except:
         date = (datetime.now() - timedelta(days = 1)).strftime('%m-%d-%Y')
         url_daily_reports = f'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/{date}.csv'
         df_daily_reports = pd.read_csv(url_daily_reports, dtype = {'FIPS': object})
+        df_daily_reports['FIPS'] = df_daily_reports['FIPS'].str.zfill(5)
 
     # Subsets of confirmed cases:
     df_china = df_confirmed[df_confirmed['Country/Region'] == 'China']
